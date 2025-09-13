@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MexNature.Api", "MexNature.Api\MexNature.Api.csproj", "{F05CE530-71FD-41E4-AEE7-B371DAD6462A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F05CE530-71FD-41E4-AEE7-B371DAD6462A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F05CE530-71FD-41E4-AEE7-B371DAD6462A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F05CE530-71FD-41E4-AEE7-B371DAD6462A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F05CE530-71FD-41E4-AEE7-B371DAD6462A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
