@@ -86,4 +86,13 @@ public class PlacesController : ControllerBase
         // Retornamos una respuesta 201 Created con la ubicación del nuevo recurso
         return CreatedAtAction(nameof(GetPlaceDetail), new { id = place.Id }, place);
     }
+    
+    // Dentro de PlacesController.cs
+
+    [HttpGet("trails")] // Ruta: GET /api/places/trails
+    public async Task<ActionResult<IEnumerable<Trail>>> GetAllTrails()
+    {
+        var trails = await _context.Trails.ToListAsync();
+        return Ok(trails);
+    }
 }

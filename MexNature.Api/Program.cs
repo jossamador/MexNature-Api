@@ -1,30 +1,47 @@
 using MexNature.Api.Data;
 using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// --- POLÍTICA DE CORS SIMPLIFICADA PARA DEPURACIÓN ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAnyOriginPolicy",
+        policyBuilder =>
+        {
+            policyBuilder.AllowAnyOrigin() // <-- Acepta cualquier origen
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+// ... tus otros servicios (AddControllers, AddDbContext, etc.) ...
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
-// 1. Obtener la cadena de conexión
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// 2. Agregar el DbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// --- ORDEN CORRECTO DE LA TUBERÍA ---
+
+// 1. Habilita el enrutamiento para que la app sepa a dónde va la petición.
+app.UseRouting(); 
+
+// 2. Aplica la política de CORS.
+app.UseCors("AllowAnyOriginPolicy");
+
+// 3. (Opcional) Redirige a HTTPS.
 app.UseHttpsRedirection();
 
+// 4. Ejecuta los endpoints de los controladores.
 app.MapControllers();
 
 app.Run();
