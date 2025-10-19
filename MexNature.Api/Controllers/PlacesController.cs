@@ -17,19 +17,18 @@ public class PlacesController : ControllerBase
         _context = context;
     }
 
-    // ENDPOINT 1: GET /api/places?category=Cascada
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PlaceDto>>> GetPlaces([FromQuery] string? category)
     {
         var query = _context.Places.AsQueryable();
 
-        // Filtro opcional por categoría
         if (!string.IsNullOrEmpty(category))
         {
             query = query.Where(p => p.Category.ToLower() == category.ToLower());
         }
 
-        // Proyectamos a DTOs para no exponer todo el modelo
+        // --- ✅ CORRECCIÓN APLICADA AQUÍ ---
+        // Rellenamos las propiedades del DTO con los datos de la base de datos.
         var places = await query
             .Select(p => new PlaceDto
             {
@@ -44,26 +43,41 @@ public class PlacesController : ControllerBase
         return Ok(places);
     }
 
-    // ENDPOINT 2: GET /api/places/1
     [HttpGet("{id}")]
-    public async Task<ActionResult<Place>> GetPlaceDetail(int id)
+    public async Task<ActionResult<PlaceDetailDto>> GetPlaceDetail(int id)
     {
         var place = await _context.Places
-            .Include(p => p.Trails) // Incluir senderos
-            .Include(p => p.Photos)  // Incluir fotos
+            .Include(p => p.Photos)
             .Include(p => p.PlaceAmenities)
-                .ThenInclude(pa => pa.Amenity) // Incluir amenidades
+                .ThenInclude(pa => pa.Amenity)
+            .Include(p => p.Trails)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (place == null)
         {
-            return NotFound(); // Retorna un error 404 si no se encuentra
+            return NotFound();
         }
 
-        return Ok(place);
+        var placeDto = new PlaceDetailDto
+        {
+            Id = place.Id,
+            Name = place.Name,
+            Description = place.Description,
+            Category = place.Category,
+            Latitude = place.Latitude,
+            Longitude = place.Longitude,
+            ElevationMeters = place.ElevationMeters,
+            Accessible = place.Accessible,
+            EntryFee = place.EntryFee,
+            OpeningHours = place.OpeningHours,
+            Photos = place.Photos.Select(photo => new PhotoDto { Id = photo.Id, Url = photo.Url }).ToList(),
+            Trails = place.Trails.Select(trail => new TrailDto { Id = trail.Id, Name = trail.Name, Difficulty = trail.Difficulty, DistanceKm = trail.DistanceKm, EstimatedTimeMinutes = trail.EstimatedTimeMinutes }).ToList(),
+            Amenities = place.PlaceAmenities.Select(pa => new AmenityDto { Id = pa.Amenity.Id, Name = pa.Amenity.Name }).ToList()
+        };
+
+        return Ok(placeDto);
     }
 
-    // ENDPOINT 3: POST /api/places
     [HttpPost]
     public async Task<ActionResult<Place>> CreatePlace(CreatePlaceDto createPlaceDto)
     {
@@ -77,22 +91,27 @@ public class PlacesController : ControllerBase
             EntryFee = createPlaceDto.EntryFee,
             OpeningHours = createPlaceDto.OpeningHours,
             CreatedAt = DateTime.UtcNow,
-            Accessible = false // Asignamos un valor por defecto
+            Accessible = false
         };
 
         _context.Places.Add(place);
         await _context.SaveChangesAsync();
-
-        // Retornamos una respuesta 201 Created con la ubicación del nuevo recurso
         return CreatedAtAction(nameof(GetPlaceDetail), new { id = place.Id }, place);
     }
-    
-    // Dentro de PlacesController.cs
 
-    [HttpGet("trails")] // Ruta: GET /api/places/trails
-    public async Task<ActionResult<IEnumerable<Trail>>> GetAllTrails()
+    [HttpGet("trails")]
+    public async Task<ActionResult<IEnumerable<TrailDto>>> GetAllTrails()
     {
-        var trails = await _context.Trails.ToListAsync();
+        var trails = await _context.Trails
+            .Select(trail => new TrailDto
+            {
+                Id = trail.Id,
+                Name = trail.Name,
+                Difficulty = trail.Difficulty,
+                DistanceKm = trail.DistanceKm,
+                EstimatedTimeMinutes = trail.EstimatedTimeMinutes
+            }).ToListAsync();
+        
         return Ok(trails);
     }
 }
