@@ -19,8 +19,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// 👇 1. REGISTRAR EL SERVICIO DE IA
+builder.Services.AddScoped<MexNature.Api.Services.AiService>();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+
+// Registrar el servicio de IA
+builder.Services.AddScoped<MexNature.Api.Services.AiService>();
 
 var app = builder.Build();
 
@@ -43,5 +50,22 @@ app.UseHttpsRedirection();
 
 // 4. Ejecuta los endpoints de los controladores.
 app.MapControllers();
+
+
+// 👇 2. CREAR EL ENDPOINT DE IA
+app.MapGet("/api/ai/describe", async (string name, string category, MexNature.Api.Services.AiService aiService) =>
+    {
+        try 
+        {
+            var description = await aiService.GetPlaceDescription(name, category);
+            return Results.Ok(new { description });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Error con la IA: {ex.Message}");
+        }
+    })
+    .WithOpenApi()
+    .WithName("GetAiDescription");
 
 app.Run();
