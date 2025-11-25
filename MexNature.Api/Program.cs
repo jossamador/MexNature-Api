@@ -31,11 +31,10 @@ builder.Services.AddScoped<MexNature.Api.Services.AiService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // --- ORDEN CORRECTO DE LA TUBERÍA ---
 
