@@ -31,6 +31,22 @@ builder.Services.AddScoped<MexNature.Api.Services.AiService>();
 
 var app = builder.Build();
 
+// --- BLOQUE DE AUTO-MIGRACIÓN ---
+// Esto crea la base de datos en la nube automáticamente al arrancar
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate(); // Aplica las migraciones pendientes
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al migrar la base de datos.");
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
