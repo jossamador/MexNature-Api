@@ -15,7 +15,7 @@ public class AiService
     {
         if (string.IsNullOrEmpty(_apiKey)) return "Sin clave de IA configurada.";
 
-        ChatClient client = new(model: "gpt-4o", apiKey: _apiKey);
+        ChatClient client = new(model: "gpt-5-mini", apiKey: _apiKey);
 
         ChatCompletion completion = await client.CompleteChatAsync(
             $"Escribe una descripción breve, atractiva y turística (máximo 150 caracteres) para un lugar llamado '{placeName}' que es de categoría '{category}' en México."
